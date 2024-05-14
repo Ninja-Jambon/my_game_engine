@@ -5,60 +5,104 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+	glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow *window)
 {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+	if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }
 
 int main(int argc, char const *argv[])
 {
-    // Initialize GLFW
+	// Initialize GLFW
 	glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Try to create the window
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	// Try to create the window
+	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
 
-    if (window == NULL)
-    {
-        printf("Failed to create GLFW window\n");
-        glfwTerminate();
-        return -1;
-    }
+	if (window == NULL)
+	{
+		printf("Failed to create GLFW window\n");
+		glfwTerminate();
+		return -1;
+	}
 
-    glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
 
-    // Try to initialize GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        printf("Failed to initialize GLAD\n");
-        return -1;
-    }
+	// Try to initialize GLAD
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		printf("Failed to initialize GLAD\n");
+		return -1;
+	}
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // Render Loop
-    while(!glfwWindowShouldClose(window))
-    {
-        // input
-        processInput(window);
+	// Render Loop
+	while(!glfwWindowShouldClose(window))
+	{
+		// input
+		processInput(window);
 
-        // rendering commands here
-        glClearColor(0.2f, 0.3f, 0.3f, 1.f);
-        glClear(GL_COLOR_BUFFER_BIT);
+		// rendering commands here
+		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-        // check and call events and swap the buffers
-        glfwSwapBuffers(window);
-        glfwPollEvents();    
-    }
+		// Define vertices of a triangle
+		float vertices[] = {
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.0f,  0.5f, 0.0f
+		};
 
-    glfwTerminate();
+		// Get the buffer id
+		unsigned int VBO;
+		glGenBuffers(1, &VBO);
+
+		// Define the buffer type
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+		// Sends the vertices data into the buffer
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		// Define our shader
+		const char *vertexShaderSource = "#version 330 core\n"
+		    "layout (location = 0) in vec3 aPos;\n"
+		    "void main()\n"
+		    "{\n"
+		    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+		    "}\0";
+
+		// Get the shader id  
+		unsigned int vertexShader;
+		vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+		// Attach the source code of the shader to it
+		glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+		glCompileShader(vertexShader);
+
+		// Check if the shader compilation was successful
+		int  success;
+		char infoLog[512];
+		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
+		if(!success)
+		{
+		    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		    printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n");
+		}
+
+		// check and call events and swap the buffers
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
 
 	return 0;
 }
