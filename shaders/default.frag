@@ -1,6 +1,6 @@
 #version 330 core
 out vec4 fragColor;
-  
+
 in vec2 fragCoord;
 uniform float iTime;
 uniform vec2 iResolution;
@@ -22,4 +22,4 @@ void main()
 	col *= d;
 
     fragColor = vec4(col, 1);
-} 
+}
