@@ -155,6 +155,14 @@ int main(int argc, char const *argv[])
     glBindVertexArray(0); 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	double previousTime = glfwGetTime();
+	int frameCount = 0;
+	   
+	double lastposx, lastposy;
+	glfwGetCursorPos(window, &lastposx, &lastposy);
+
+	double dx = 0., dy = 0.;
+
 	// Render Loop
 	while(!glfwWindowShouldClose(window))
 	{
@@ -167,19 +175,43 @@ int main(int argc, char const *argv[])
 		int width, height;
 	    glfwGetWindowSize(window, &width, &height);
 
+		int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		if (state == GLFW_PRESS)
+		{
+			double posx, posy;
+			glfwGetCursorPos(window, &posx, &posy);
+			dx -= (lastposx - posx);
+			dy += (lastposy - posy);
+		}
+
+		glfwGetCursorPos(window, &lastposx, &lastposy);
+
+
 		int iTime = glGetUniformLocation(shaderProgram, "iTime");
 		int iResolution = glGetUniformLocation(shaderProgram, "iResolution");
+		int iMouse = glGetUniformLocation(shaderProgram, "iMouse");
 
 		// Activate the shader program
 		glUseProgram(shaderProgram);
 
 		glUniform1f(iTime, timeValue);
 		glUniform2f(iResolution, (float)width, (float)height);
+		glUniform2f(iMouse, (float)dx, (float)dy);
 
 		// Draw the rectangle
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+		double currentTime = glfwGetTime();
+	    frameCount++;
+	    if ( currentTime - previousTime >= 1.0 )
+	    {
+	        printf("FPS : %d \n", frameCount);
+
+	        frameCount = 0;
+	        previousTime = currentTime;
+	    }
 
 		// check and call events and swap the buffers
 		glfwSwapBuffers(window);
