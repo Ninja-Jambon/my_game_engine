@@ -20,7 +20,7 @@ void processInput(GLFWwindow *window)
 char* loadFile(const char* filename) {
     FILE* file = fopen(filename, "rb");
     if (!file) {
-        printf("Impossible d'ouvrir le fichier %s\n", filename);
+        printf("Cannot open the file %s\n", filename);
         return NULL;
     }
 
@@ -54,6 +54,7 @@ int main(int argc, char const *argv[])
 		return -1;
 	}
 
+	// Make the context to be our window
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -64,12 +65,13 @@ int main(int argc, char const *argv[])
 		return -1;
 	}
 
-	// Define our vertex shader
+	// Load our vertex shader
 	const char *vertexShaderSource = loadFile("../shaders/default.vert");
 
-	// Define our frag shader
+	// Load our frag shader
 	const char *fragmentShaderSource = loadFile("../shaders/default.frag");
 	
+	// Create the vertex shader and try to compile it
 	unsigned int vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -155,26 +157,31 @@ int main(int argc, char const *argv[])
     glBindVertexArray(0); 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	// Define the time at the begining of the program
 	double previousTime = glfwGetTime();
 	int frameCount = 0;
-	   
+
+	// Keep the last position of the mouse in memory
 	double lastposx, lastposy;
 	glfwGetCursorPos(window, &lastposx, &lastposy);
 
+	// Define the mouse position with displacement added
 	double dx = 0., dy = 0.;
 
 	// Render Loop
 	while(!glfwWindowShouldClose(window))
 	{
-
 		// input
 		processInput(window);
 
+		// Get the execution time
 		float timeValue = glfwGetTime();
 
+		// Get the window size
 		int width, height;
 	    glfwGetWindowSize(window, &width, &height);
 
+	    // If mouse pressed update displacement
 		int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 		if (state == GLFW_PRESS)
 		{
@@ -186,7 +193,7 @@ int main(int argc, char const *argv[])
 
 		glfwGetCursorPos(window, &lastposx, &lastposy);
 
-
+		// Define uniforms for the shader program
 		int iTime = glGetUniformLocation(shaderProgram, "iTime");
 		int iResolution = glGetUniformLocation(shaderProgram, "iResolution");
 		int iMouse = glGetUniformLocation(shaderProgram, "iMouse");
@@ -194,15 +201,17 @@ int main(int argc, char const *argv[])
 		// Activate the shader program
 		glUseProgram(shaderProgram);
 
+		// Send the variables to the shader program
 		glUniform1f(iTime, timeValue);
 		glUniform2f(iResolution, (float)width, (float)height);
 		glUniform2f(iMouse, (float)dx, (float)dy);
 
-		// Draw the rectangle
+		// Draw the rectangle on the screen
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
+		// Display FPS in the console
 		double currentTime = glfwGetTime();
 	    frameCount++;
 	    if ( currentTime - previousTime >= 1.0 )
@@ -218,6 +227,12 @@ int main(int argc, char const *argv[])
 		glfwPollEvents();
 	}
 
+	// Free the memory
+	glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
+
+    // Kill the window
 	glfwTerminate();
 
 	return 0;

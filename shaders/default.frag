@@ -6,15 +6,6 @@ uniform float iTime;
 uniform vec2 iResolution;
 uniform vec2 iMouse;
 
-vec3 palette(float t) {
-	vec3 a = vec3(0.821, 0.328, 0.242);
-	vec3 b = vec3(0.659, 0.481, 0.896);
-	vec3 c = vec3(0.612, 0.340, 0.296);
-	vec3 d = vec3(2.820, 3.026, -0.273);
-
-	return a + b*cos(6.28318*(c*t*d));
-}
-
 float sdSphere(vec3 p, float s) {
 	return length(p) - s;
 }
@@ -22,11 +13,6 @@ float sdSphere(vec3 p, float s) {
 float sdBox(vec3 p, vec3 b) {
 	vec3 q = abs(p) - b;
 	return length(max(q, 0)) + min(max(q.x, max(q.y, q.z)), 0);
-}
-
-float sdOctahedron(vec3 p, float s) {
-	p = abs(p);
-	return (p.x + p.y + p.z - s) * 0.57735027;
 }
 
 float smin(float a, float b, float k) {
@@ -41,22 +27,25 @@ mat2 rot2D(float angle) {
 }
 
 float map(vec3 p) {
-	p.z += iTime * .4;
+	vec3 spherePos = vec3(sin(iTime)*3, 0, 0);
+	float sphere = sdSphere(p - spherePos, 1);
 
-	p.xy = fract(p.xy) - .5;
-	p.z = mod(p.z, .25) - .125;
+	vec3 q = p;
 
-	float box = sdOctahedron(p, .15);
+	q = fract(p) - .5;
+
+	q.xy *= rot2D(iTime);
+
+	float box = sdBox(q, vec3(.1));
 
 	float ground = p.y + .75;
 
-	return box;
+	return smin(ground, smin(sphere, box, 2), 1);
 }
 
 void main()
 {
-	vec2 uv = fragCoord;
-	uv.x *= iResolution.x / iResolution.y;
+	vec2 uv = vec2(fragCoord.x * iResolution.x / iResolution.y, fragCoord.y);
 	vec2 m = (iMouse * 2 - iResolution) / iResolution.y;
 
 	// init
@@ -66,19 +55,15 @@ void main()
 
 	float t = 0; // total distance travelled
 
-	//ro.yz *= rot2D(-m.y);
-	//rd.yz *= rot2D(-m.y);
+	ro.yz *= rot2D(-m.y);
+	rd.yz *= rot2D(-m.y);
 
-	//ro.xz *= rot2D(-m.x);
-	//rd.xz *= rot2D(-m.x);
+	ro.xz *= rot2D(-m.x);
+	rd.xz *= rot2D(-m.x);
 
 	// raymarching
-	int i;
-	for (i = 0; i < 80; i++) {
+	for (int i = 0; i < 80; i++) {
 		vec3 p = ro + rd * t; // position allong the ray
-
-		p.xy *= rot2D(t*.2 * m.x);
-		p.y += sin(t*(m.y+1.)*.5)*.35;
 
 		float d = map(p); // current distance to the scene
 
@@ -88,7 +73,7 @@ void main()
 	}
 
 	// Coloring
-	col = palette(t*.04 + float(i)* .005);
+	col = vec3(t * .07); // Color based on distance
 
     fragColor = vec4(col, 1);
 }
