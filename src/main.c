@@ -168,6 +168,12 @@ int main(int argc, char const *argv[])
 	// Define the mouse position with displacement added
 	double dx = 0., dy = 0.;
 
+	// Define player position
+	float coordx = 0, coordy = 0, coordz = 0;
+
+	bool fullScreen = false;
+	float lastChanged = glfwGetTime();
+
 	// Render Loop
 	while(!glfwWindowShouldClose(window))
 	{
@@ -193,10 +199,61 @@ int main(int argc, char const *argv[])
 
 		glfwGetCursorPos(window, &lastposx, &lastposy);
 
+		state = glfwGetKey(window, GLFW_KEY_SPACE);
+		if (state == GLFW_PRESS)
+		{
+		    coordy += .05;
+		}
+		state = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
+		if (state == GLFW_PRESS)
+		{
+		    coordy -= .05;
+		}
+		state = glfwGetKey(window, GLFW_KEY_W);
+		if (state == GLFW_PRESS)
+		{
+		    coordz += .05;
+		}
+		state = glfwGetKey(window, GLFW_KEY_A);
+		if (state == GLFW_PRESS)
+		{
+		    coordx -= .05;
+		}
+		state = glfwGetKey(window, GLFW_KEY_S);
+		if (state == GLFW_PRESS)
+		{
+		    coordz -= .05;
+		}
+		state = glfwGetKey(window, GLFW_KEY_D);
+		if (state == GLFW_PRESS)
+		{
+		    coordx += .05;
+		}
+
+		state = glfwGetKey(window, GLFW_KEY_F11);
+		if (state == GLFW_PRESS)
+		{
+			if (!fullScreen && timeValue - lastChanged >= 1.0) {
+				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+				glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+
+				fullScreen = true;
+				lastChanged = timeValue;
+			} else if (fullScreen && timeValue - lastChanged >= 1.0){
+				glfwSetWindowMonitor(window, NULL, 0, 0, width, height, GLFW_DONT_CARE);
+
+				fullScreen = false;
+				lastChanged = timeValue;
+			}
+		}
+
 		// Define uniforms for the shader program
 		int iTime = glGetUniformLocation(shaderProgram, "iTime");
 		int iResolution = glGetUniformLocation(shaderProgram, "iResolution");
 		int iMouse = glGetUniformLocation(shaderProgram, "iMouse");
+		int iPlayer = glGetUniformLocation(shaderProgram, "iPlayer");
 
 		// Activate the shader program
 		glUseProgram(shaderProgram);
@@ -205,6 +262,7 @@ int main(int argc, char const *argv[])
 		glUniform1f(iTime, timeValue);
 		glUniform2f(iResolution, (float)width, (float)height);
 		glUniform2f(iMouse, (float)dx, (float)dy);
+		glUniform3f(iPlayer, coordx, coordy, coordz);
 
 		// Draw the rectangle on the screen
 		glBindVertexArray(VAO);

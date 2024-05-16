@@ -1,10 +1,12 @@
 #version 330 core
+
 out vec4 fragColor;
 
 in vec2 fragCoord;
 uniform float iTime;
 uniform vec2 iResolution;
 uniform vec2 iMouse;
+uniform vec3 iPlayer;
 
 float sdSphere(vec3 p, float s) {
 	return length(p) - s;
@@ -32,9 +34,9 @@ float map(vec3 p) {
 
 	vec3 q = p;
 
-	q = fract(p) - .5;
+	//q = fract(p) - .5;
 
-	q.xy *= rot2D(iTime);
+	//q.xy *= rot2D(iTime);
 
 	float box = sdBox(q, vec3(.1));
 
@@ -49,16 +51,16 @@ void main()
 	vec2 m = (iMouse * 2 - iResolution) / iResolution.y;
 
 	// init
-	vec3 ro = vec3(0, 0, -3);          // ray origin
+	vec3 ro = vec3(0, 0, -3) + iPlayer;          // ray origin
 	vec3 rd = normalize(vec3(uv, 1));  // ray direction
 	vec3 col = vec3(0);                // final pixel color
 
 	float t = 0; // total distance travelled
 
-	ro.yz *= rot2D(-m.y);
+	//ro.yz *= rot2D(-m.y);
 	rd.yz *= rot2D(-m.y);
 
-	ro.xz *= rot2D(-m.x);
+	//ro.xz *= rot2D(-m.x);
 	rd.xz *= rot2D(-m.x);
 
 	// raymarching
