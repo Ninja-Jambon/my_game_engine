@@ -84,7 +84,7 @@ int main(int argc, char const *argv[])
 	if(!success)
 	{
 	    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-	    printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n");
+	    printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog);
 	}
 
 	// Create the fragment shader and try to compile it
@@ -98,7 +98,7 @@ int main(int argc, char const *argv[])
 	if(!success)
 	{
 	    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-	    printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n");
+	    printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", infoLog);
 	}
 
 	// Creating a shader program and combining our shaders into it
@@ -112,7 +112,7 @@ int main(int argc, char const *argv[])
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if(!success) {
 	    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-	    printf("ERROR::SHADERS::LINKING_FAILED\n");
+	    printf("ERROR::SHADERS::LINKING_FAILED\n%s\n", infoLog);
 	}
 
 	// Delete our shaders because we no longer need them
@@ -169,7 +169,7 @@ int main(int argc, char const *argv[])
 	double dx = 0., dy = 0.;
 
 	// Define player position
-	float coordx = 0, coordy = 0, coordz = 0;
+	float coordx = 0., coordy = 0., coordz = 0.;
 
 	bool fullScreen = false;
 	float lastChanged = glfwGetTime();
@@ -193,8 +193,8 @@ int main(int argc, char const *argv[])
 		{
 			double posx, posy;
 			glfwGetCursorPos(window, &posx, &posy);
-			dx -= (lastposx - posx);
-			dy += (lastposy - posy);
+			dx -= (lastposx - posx) * .005;
+			dy += (lastposy - posy) * .005;
 		}
 
 		glfwGetCursorPos(window, &lastposx, &lastposy);
@@ -212,22 +212,26 @@ int main(int argc, char const *argv[])
 		state = glfwGetKey(window, GLFW_KEY_W);
 		if (state == GLFW_PRESS)
 		{
-		    coordz += .05;
+			coordx += .05 * -sin(-dx);
+		    coordz += .05 * cos(-dx);
 		}
 		state = glfwGetKey(window, GLFW_KEY_A);
 		if (state == GLFW_PRESS)
 		{
-		    coordx -= .05;
+			coordx -= .05 * cos(-dx);
+		    coordz -= .05 * sin(-dx);
 		}
 		state = glfwGetKey(window, GLFW_KEY_S);
 		if (state == GLFW_PRESS)
 		{
-		    coordz -= .05;
+			coordx -= .05 * -sin(-dx);
+		    coordz -= .05 * cos(-dx);
 		}
 		state = glfwGetKey(window, GLFW_KEY_D);
 		if (state == GLFW_PRESS)
 		{
-		    coordx += .05;
+			coordx += .05 * cos(-dx);
+		    coordz += .05 * sin(-dx);
 		}
 
 		state = glfwGetKey(window, GLFW_KEY_F11);
